@@ -55,6 +55,8 @@ create(HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs)->
 			   case rpc:call(SlaveNode,code,add_patha,[NodeDir],1000) of
 			       {badrpc,Error}->
 				   {error,[badrpc,Error,SlaveNode]};
+			       {error,bad_directory}->
+				   {error,[bad_directory,NodeDir]};
 			       true-> {ok,SlaveNode}
 			   end
 		   end
