@@ -18,6 +18,7 @@
 %-compile(export_all).
 -export([
 	 create/6,
+	 create/5,
 	 delete/1,
 	 ssh_create/5,
 	 load_start_appl/6,
@@ -29,6 +30,28 @@
 %% External functions
 %% ====================================================================
 
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% --------------------------------------------------------------------
+create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
+    Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
+    Result=case slave:start(HostName,NodeName,Args) of
+	       {error,Reason}->
+		   {error,[Reason]};
+	       {ok,SlaveNode}->
+		   case net_kernel:connect_node(SlaveNode) of
+		       false->
+			   {error,[failed_connect,SlaveNode]};
+		       ignored->
+			   {error,[ignored,SlaveNode]};
+		       true->
+			   {ok,SlaveNode}
+			   
+		   end
+	   end,
+    Result.
 %% --------------------------------------------------------------------
 %% Function:start/0 
 %% Description: Initiate the eunit tests, set upp needed processes etc
