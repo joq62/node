@@ -19,6 +19,7 @@
 -export([
 	 create/6,
 	 delete/1,
+	 ssh_create/5,
 	 load_start_appl/6,
 	 stop_unload_appl/3
 	]).
@@ -76,6 +77,34 @@ delete(Node)->
 %% Description: Initiate the eunit tests, set upp needed processes etc
 %% Returns: non
 %% --------------------------------------------------------------------
+ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
+
+    Node=list_to_atom(NodeName++"@"++HostName),
+    Kill=rpc:call(Node,init,stop,[],5000),
+    Ip=config_server:host_local_ip(HostName),
+    SshPort=config_server:host_ssh_port(HostName),
+    Uid=config_server:host_uid(HostName),
+    Pwd=config_server:host_passwd(HostName),
+    Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
+
+    Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
+    Timeout=5000,
+    Result=case rpc:call(node(),my_ssh,ssh_send,[Ip,SshPort,Uid,Pwd,Msg,Timeout],Timeout-1000) of
+	       {badrpc,Reason}->
+		   {error,[{badrpc,Reason}]};
+	       ok->
+		   case net_adm:ping(Node) of
+		       pang->
+			   Kill=rpc:call(Node,init,stop,[],5000),
+			   {error,[{couldnt_connect,Node}]};
+		       pong->
+			   {ok,Node}
+		   end
+	   end,
+    Result.
+
+
+
 %% --------------------------------------------------------------------
 %% Function:start/0 
 %% Description: Initiate the eunit tests, set upp needed processes etc
