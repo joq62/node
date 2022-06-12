@@ -20,6 +20,8 @@
 -export([
 	
 	 create/6,
+	 create/5,
+	 ssh_create/5,
 	 delete/1,
 	 load_start_appl/6,
 	 stop_unload_appl/3,
@@ -60,6 +62,14 @@ stop()-> gen_server:call(?SERVER, {stop},infinity).
 %% ====================================================================
 %% Application handling
 %% ====================================================================
+
+
+create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
+    gen_server:call(?SERVER, {create,HostName,NodeName,Cookie,PaArgs,EnvArgs},infinity).
+
+
+ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
+    gen_server:call(?SERVER, {ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},infinity).
 
 
 create(HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs)->
@@ -135,6 +145,15 @@ init([]) ->
 %%          {stop, Reason, Reply, State}   | (terminate/2 is called)
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
+handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
+    Reply=rpc:call(node(),node_lib,create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],2*5000),
+    {reply, Reply, State};
+
+handle_call({ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
+    Reply=rpc:call(node(),node_lib,ssh_create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],5*5000),
+    {reply, Reply, State};
+
+
 handle_call({create,HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
     Reply=rpc:call(node(),node_lib,create,[HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs],2*5000),
     {reply, Reply, State};
