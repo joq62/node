@@ -137,7 +137,7 @@ load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,S
     ApplDir=filename:join(NodeDir,ApplId++"_"++ApplVsn),
     os:cmd("rm -rf "++ApplDir),
     ok=file:make_dir(ApplDir),
-    Result=case rpc:call(node(),git_lib,create,[ApplDir,GitPath],20*5000) of
+    Result=case rpc:call(node(),git_lib,create,[Node,ApplDir,GitPath],20*5000) of
 		       {error,Reason}->
 			   rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
 					      {"Error when loading service ",ApplId,' ', {error,Reason}}],5000),
