@@ -74,6 +74,7 @@ ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
 
 create(HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs)->
     gen_server:call(?SERVER, {create,HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs},infinity).
+
 delete(Node)->
     gen_server:call(?SERVER, {delete,Node},infinity).
     
