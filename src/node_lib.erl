@@ -104,10 +104,10 @@ ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
 
     Node=list_to_atom(NodeName++"@"++HostName),
     Kill=rpc:call(Node,init,stop,[],5000),
-    Ip=db_host_spec:read(local_ip,HostName),
-    SshPort=db_host_spec:read(ssh_port,HostName),
-    Uid=db_host_spec:read(uid,HostName),
-    Pwd=db_host_spec:read(passwd,HostName),
+    {ok,Ip}=db_host_spec:read(local_ip,HostName),
+    {ok,SshPort}=db_host_spec:read(ssh_port,HostName),
+    {ok,Uid}=db_host_spec:read(uid,HostName),
+    {ok,Pwd}=db_host_spec:read(passwd,HostName),
     Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
 
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
