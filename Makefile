@@ -21,4 +21,7 @@ eunit:
 	mkdir ebin;
 	cp _build/default/lib/node/ebin/* ebin;
 	erlc -o test_ebin test/*.erl;
-	erl -pa ebin -pa test_ebin -sname node -run basic_eunit start -setcookie cookie_test
+	erl -pa ebin -pa test_ebin\
+	    -pa /home/joq62/erlang/infrastructure/nodelog/ebin\
+	    -pa /home/joq62/erlang/infrastructure/common/ebin\
+	    -sname node -run basic_eunit start -setcookie cookie_test

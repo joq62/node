@@ -30,17 +30,23 @@
 %% Description: Initiate the eunit tests, set upp needed processes etc
 %% Returns: non
 %% --------------------------------------------------------------------
-create(Node,ApplDir,GitPath)->
-    TempDir="temp.dir",
+create(Node,BaseApplDir,GitPath)->
+    {ok,Root}=rpc:call(Node,file,get_cwd,[],1000),  
+    ApplDir=filename:join(Root,BaseApplDir),
+    TempDir=filename:join(Root,"temp.dir"),
     rpc:call(Node,os,cmd,["rm -rf "++TempDir],1000),
     ok=rpc:call(Node,file,make_dir,[TempDir],1000),
     Clonres=rpc:call(Node,os,cmd,["git clone "++GitPath++" "++TempDir],5000),
+    io:format("Clonres ~p~n",[Clonres]),
+
     rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 					{clone_result,Clonres}]),
     MvRes=rpc:call(Node,os,cmd,["mv  "++TempDir++"/*"++" "++ApplDir],5000),
+    io:format("MvRes ~p~n",[MvRes]),
     rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 				     {mv_result,MvRes}]),
     RmRes=rpc:call(Node,os,cmd,["rm -r  "++TempDir],5000),
+    io:format("RmRes ~p~n",[RmRes]),
     rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 				     {rm_result,RmRes}]),
     Ebin=filename:join(ApplDir,"ebin"),
@@ -48,17 +54,22 @@ create(Node,ApplDir,GitPath)->
 	      true->
 		  case rpc:call(Node,code,add_patha,[Ebin],5000) of
 		      true->
+			  
 			  {ok,ApplDir};
 		      {badrpc,Reason} ->
+			  
 			  {error,[badrpc,Reason]};
 		      Err ->
+			
 			  {error,[Err]}
 		  end;
 	      false ->
 		  {error,[no_dir_created,?MODULE,?LINE]};
 	      {badrpc,Reason} ->
+
 		  {error,[badrpc,Reason]}
 	  end,
+    io:format("Reply ~p~n",[Reply]),
     Reply.
 
 %% --------------------------------------------------------------------

@@ -20,6 +20,7 @@
 	 create/6,
 	 create/5,
 	 delete/1,
+	 ssh_create/2,
 	 ssh_create/5,
 	 load_start_appl/6,
 	 stop_unload_appl/3
@@ -95,19 +96,31 @@ create(HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs)->
 delete(Node)->
     slave:stop(Node).
 
+
 %% --------------------------------------------------------------------
 %% Function:start/0 
 %% Description: Initiate the eunit tests, set upp needed processes etc
 %% Returns: non
 %% --------------------------------------------------------------------
 ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
-
-    Node=list_to_atom(NodeName++"@"++HostName),
-    Kill=rpc:call(Node,init,stop,[],5000),
     {ok,Ip}=db_host_spec:read(local_ip,HostName),
     {ok,SshPort}=db_host_spec:read(ssh_port,HostName),
     {ok,Uid}=db_host_spec:read(uid,HostName),
     {ok,Pwd}=db_host_spec:read(passwd,HostName),
+    ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
+	       {Ip,SshPort,Uid,Pwd}).
+    
+%% --------------------------------------------------------------------
+%% Function:start/0 
+%% Description: Initiate the eunit tests, set upp needed processes etc
+%% Returns: non
+%% --------------------------------------------------------------------
+ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
+	   {Ip,SshPort,Uid,Pwd})->
+
+    Node=list_to_atom(NodeName++"@"++HostName),
+    Kill=rpc:call(Node,init,stop,[],5000),
+
     Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
 
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
@@ -116,17 +129,30 @@ ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
 	       {badrpc,Reason}->
 		   {error,[{badrpc,Reason}]};
 	       ok->
-		   case net_adm:ping(Node) of
-		       pang->
+		   case check_started_node(50,Node,false) of
+		       false->
 			   Kill=rpc:call(Node,init,stop,[],5000),
 			   {error,[{couldnt_connect,Node}]};
-		       pong->
+		       true->
 			   {ok,Node}
 		   end
 	   end,
     Result.
 
-
+check_started_node(_N,_Node,true)->
+    true;
+check_started_node(0,_Node,Boolean) ->
+    Boolean;
+check_started_node(N,Node,_) ->
+      Boolean=case net_adm:ping(Node) of
+		  pang->
+		      timer:sleep(100),
+		      false;
+		  pong->
+		      true
+	      end,
+    check_started_node(N-1,Node,Boolean).
+    
 
 %% --------------------------------------------------------------------
 %% Function:start/0 

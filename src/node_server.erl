@@ -21,6 +21,7 @@
 	
 	 create/6,
 	 create/5,
+	 ssh_create/2,
 	 ssh_create/5,
 	 delete/1,
 	 load_start_appl/6,
@@ -67,13 +68,15 @@ stop()-> gen_server:call(?SERVER, {stop},infinity).
 create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
     gen_server:call(?SERVER, {create,HostName,NodeName,Cookie,PaArgs,EnvArgs},infinity).
 
-
-ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
-    gen_server:call(?SERVER, {ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},infinity).
-
-
 create(HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs)->
     gen_server:call(?SERVER, {create,HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs},infinity).
+
+
+
+ssh_create(NodeArgs,SshArgs)->
+    gen_server:call(?SERVER, {ssh_create,NodeArgs,SshArgs},infinity).
+ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
+    gen_server:call(?SERVER, {ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},infinity).
 
 delete(Node)->
     gen_server:call(?SERVER, {delete,Node},infinity).
@@ -148,6 +151,10 @@ init([]) ->
 %% --------------------------------------------------------------------
 handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
     Reply=rpc:call(node(),node_lib,create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],2*5000),
+    {reply, Reply, State};
+
+handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
+    Reply=rpc:call(node(),node_lib,ssh_create,[NodeArgs,SshArgs],5*5000),
     {reply, Reply, State};
 
 handle_call({ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
