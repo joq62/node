@@ -176,7 +176,8 @@ check_started_node(N,Node,_) ->
 %% Returns: non
 %% --------------------------------------------------------------------
 load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs})->
-    ApplDir=filename:join(NodeDir,ApplId++"_"++ApplVsn),
+    {ok,Root}=rpc:call(Node,file,get_cwd,[],5000),
+    ApplDir=filename:join([Root,NodeDir,ApplId++"_"++ApplVsn]),
     os:cmd("rm -rf "++ApplDir),
     ok=file:make_dir(ApplDir),
     Result=case rpc:call(node(),git_lib,create,[Node,ApplDir,GitPath],20*5000) of
