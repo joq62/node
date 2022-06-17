@@ -119,8 +119,8 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
 	   {Ip,SshPort,Uid,Pwd})->
 
     Node=list_to_atom(NodeName++"@"++HostName),
-    Kill=rpc:call(Node,init,stop,[],5000),
-
+    rpc:call(Node,init,stop,[],5000),
+    true=check_stopped_node(100,Node,false),
     Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
 
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
@@ -129,9 +129,9 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
 	       {badrpc,Reason}->
 		   {error,[{badrpc,Reason}]};
 	       ok->
-		   case check_started_node(50,Node,false) of
+		   case check_started_node(100,Node,false) of
 		       false->
-			   Kill=rpc:call(Node,init,stop,[],5000),
+			   rpc:call(Node,init,stop,[],5000),
 			   {error,[{couldnt_connect,Node}]};
 		       true->
 			   {ok,Node}
@@ -139,18 +139,34 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
 	   end,
     Result.
 
+check_stopped_node(_N,_Node,true)->
+    true;
+check_stopped_node(0,_Node,Boolean) ->
+    Boolean;
+check_stopped_node(N,Node,_) ->
+    io:format("stopp N ~p~n",[N]),
+    Boolean=case net_adm:ping(Node) of
+		pong->
+		    timer:sleep(100),
+		    false;
+		pang->
+		    true
+	    end,
+    check_stopped_node(N-1,Node,Boolean).
+
 check_started_node(_N,_Node,true)->
     true;
 check_started_node(0,_Node,Boolean) ->
     Boolean;
 check_started_node(N,Node,_) ->
-      Boolean=case net_adm:ping(Node) of
+      io:format("start N ~p~n",[N]),
+    Boolean=case net_adm:ping(Node) of
 		  pang->
-		      timer:sleep(100),
+		    timer:sleep(100),
 		      false;
-		  pong->
-		      true
-	      end,
+		pong->
+		    true
+	    end,
     check_started_node(N-1,Node,Boolean).
     
 
