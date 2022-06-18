@@ -72,7 +72,6 @@ create(Node,BaseApplDir,GitPath)->
 
 		  {error,[badrpc,Reason]}
 	  end,
-    io:format("Reply ~p~n",[Reply]),
     Reply.
 
 %% --------------------------------------------------------------------
