@@ -126,6 +126,8 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
     Timeout=5000,
     Result=case rpc:call(node(),my_ssh,ssh_send,[Ip,SshPort,Uid,Pwd,Msg,Timeout],Timeout-1000) of
+	       % {badrpc,timeout}-> retry X times
+	       
 	       {badrpc,Reason}->
 		   {error,[{badrpc,Reason}]};
 	       ok->
@@ -144,7 +146,6 @@ check_stopped_node(_N,_Node,true)->
 check_stopped_node(0,_Node,Boolean) ->
     Boolean;
 check_stopped_node(N,Node,_) ->
-    io:format("stopp N ~p~n",[N]),
     Boolean=case net_adm:ping(Node) of
 		pong->
 		    timer:sleep(100),
@@ -159,7 +160,7 @@ check_started_node(_N,_Node,true)->
 check_started_node(0,_Node,Boolean) ->
     Boolean;
 check_started_node(N,Node,_) ->
-      io:format("start N ~p~n",[N]),
+
     Boolean=case net_adm:ping(Node) of
 		  pang->
 		    timer:sleep(100),
