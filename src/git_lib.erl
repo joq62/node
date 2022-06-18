@@ -43,7 +43,7 @@ create(Node,BaseApplDir,GitPath)->
 
  %   rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 %					{clone_result,Clonres}]),
-    %MvRes=rpc:call(Node,os,cmd,["mv  "++TempDir++"/*"++" "++ApplDir],5000),
+    _MvRes=rpc:call(Node,os,cmd,["mv  "++TempDir++"/*"++" "++ApplDir],5000),
   %  io:format("MvRes ~p~n",[MvRes]),
  %   rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 %				     {mv_result,MvRes}]),
@@ -67,7 +67,7 @@ create(Node,BaseApplDir,GitPath)->
 			  {error,[Err]}
 		  end;
 	      false ->
-		  {error,[no_dir_created,?MODULE,?LINE]};
+		  {error,[ebin_dir_not_created,?MODULE,?LINE,Node]};
 	      {badrpc,Reason} ->
 
 		  {error,[badrpc,Reason]}
