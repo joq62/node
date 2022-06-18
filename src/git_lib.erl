@@ -35,8 +35,10 @@ create(Node,BaseApplDir,GitPath)->
     ApplDir=filename:join(Root,BaseApplDir),
     TempDir=filename:join(Root,"temp.dir"),
     rpc:call(Node,os,cmd,["rm -rf "++TempDir],1000),
+    timer:sleep(1000),
     ok=rpc:call(Node,file,make_dir,[TempDir],1000),
     _Clonres=rpc:call(Node,os,cmd,["git clone "++GitPath++" "++TempDir],5000),
+    timer:sleep(1000),
  %   io:format("Clonres ~p~n",[Clonres]),
 
  %   rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
@@ -46,6 +48,7 @@ create(Node,BaseApplDir,GitPath)->
  %   rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 %				     {mv_result,MvRes}]),
     _RmRes=rpc:call(Node,os,cmd,["rm -r  "++TempDir],5000),
+    timer:sleep(1000),
    % io:format("RmRes ~p~n",[RmRes]),
     %rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
 %				     {rm_result,RmRes}]),
