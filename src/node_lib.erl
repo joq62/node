@@ -176,10 +176,13 @@ check_started_node(N,Node,_) ->
 %% Returns: non
 %% --------------------------------------------------------------------
 load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs})->
-    {ok,Root}=rpc:call(Node,file,get_cwd,[],5000),
-    ApplDir=filename:join([Root,NodeDir,ApplId++"_"++ApplVsn]),
-    os:cmd("rm -rf "++ApplDir),
-    ok=file:make_dir(ApplDir),
+   % {ok,Root}=rpc:call(Node,file,get_cwd,[],5000),
+  %  ApplDir=filename:join([Root,NodeDir,ApplId++"_"++ApplVsn]),
+    ApplDir=filename:join([NodeDir,ApplId++"_"++ApplVsn]),
+  %  os:cmd("rm -rf "++ApplDir),
+ %   ok=file:make_dir(ApplDir),
+    rpc:call(Node,os,cmd,["rm -rf "++ApplDir],5000),
+    ok=rpc:call(Node,file,make_dir,[ApplDir],5000),
     Result=case rpc:call(node(),git_lib,create,[Node,ApplDir,GitPath],20*5000) of
 		       {error,Reason}->
 			   rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
