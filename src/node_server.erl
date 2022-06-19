@@ -153,7 +153,7 @@ init([]) ->
 handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],2*5000) of
 	      {ok,Node}->
-		  rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
 						      {"OK, start Node at host  ",Node,HostName}]),
 		  {ok,Node};
 	      {error,Reason}->
@@ -167,7 +167,7 @@ handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
 handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,ssh_create,[NodeArgs,SshArgs],5*5000) of
 	      {ok,Node}->
-		  rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
 						      {"OK, start Node at host  ",Node,NodeArgs}]),
 		  {ok,Node};
 	      {error,Reason}->
@@ -180,7 +180,7 @@ handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
 handle_call({ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,ssh_create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],5*5000) of
 	      {ok,Node}->
-		  rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
 						      {"OK, start Node at host  ",Node,HostName}]),
 		  {ok,Node};
 	      {error,Reason}->
