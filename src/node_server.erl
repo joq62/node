@@ -150,21 +150,47 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
-    Reply=rpc:call(node(),node_lib,create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],2*5000),
+    Reply=case rpc:call(node(),node_lib,create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],2*5000) of
+	      {ok,Node}->
+		  rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+						      {"OK, start Node at host  ",Node,HostName}]),
+		  {ok,Node};
+	      {error,Reason}->
+		  rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
+						      {"Error when creating Node with name  at host  ",NodeName,HostName, Reason}]),
+		  {error,Reason}
+	  end,
     {reply, Reply, State};
 
+
 handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
-    Reply=rpc:call(node(),node_lib,ssh_create,[NodeArgs,SshArgs],5*5000),
+    Reply=case rpc:call(node(),node_lib,ssh_create,[NodeArgs,SshArgs],5*5000) of
+	      {ok,Node}->
+		  rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+						      {"OK, start Node at host  ",Node,NodeArgs}]),
+		  {ok,Node};
+	      {error,Reason}->
+		  rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
+						      {"Error when creating Node with name  at host  ",NodeArgs, Reason}]),
+		  {error,Reason}
+	  end,
     {reply, Reply, State};
 
 handle_call({ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
-    Reply=rpc:call(node(),node_lib,ssh_create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],5*5000),
+    Reply=case rpc:call(node(),node_lib,ssh_create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],5*5000) of
+	      {ok,Node}->
+		  rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+						      {"OK, start Node at host  ",Node,HostName}]),
+		  {ok,Node};
+	      {error,Reason}->
+		  rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
+						      {"Error when creating NodeName at host  ",NodeName,HostName, Reason}]),
+		  {error,Reason}
+	  end,
     {reply, Reply, State};
 
 
-handle_call({create,HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
-    Reply=rpc:call(node(),node_lib,create,[HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs],2*5000),
-    {reply, Reply, State};
+
 
 handle_call({delete,Node},_From, State) ->
     Reply=rpc:call(node(),node_lib,delete,[Node],2*5000),

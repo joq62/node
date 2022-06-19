@@ -126,15 +126,14 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
     Timeout=5000,
     Result=case rpc:call(node(),my_ssh,ssh_send,[Ip,SshPort,Uid,Pwd,Msg,Timeout],Timeout-1000) of
-	       % {badrpc,timeout}-> retry X times
-	       
+	       % {badrpc,timeout}-> retry X times       
 	       {badrpc,Reason}->
-		   {error,[{badrpc,Reason}]};
+		   {error,[{?MODULE,?LINE," ",badrpc,Reason}]};
 	       ok->
 		   case check_started_node(100,Node,false) of
 		       false->
 			   rpc:call(Node,init,stop,[],5000),
-			   {error,[{couldnt_connect,Node}]};
+			   {error,[{?MODULE,?LINE," ",couldnt_connect,Node}]};
 		       true->
 			   {ok,Node}
 		   end
@@ -185,27 +184,19 @@ load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,S
     rpc:call(Node,os,cmd,["rm -rf "++ApplDir],5000),
     ok=rpc:call(Node,file,make_dir,[ApplDir],5000),
     Result=case rpc:call(node(),git_lib,create,[Node,ApplDir,GitPath],20*5000) of
-		       {error,Reason}->
-			   rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
-					      {"Error when loading service ",ApplId,' ', {error,Reason}}],5000),
-			   {error,Reason};
-		       {ok,ApplDir}->
-			   ApplEbin=filename:join(ApplDir,"ebin"),
+	       {error,Reason}->
+		   {error,Reason};
+	       {ok,ApplDir}->
+		   ApplEbin=filename:join(ApplDir,"ebin"),
 			   case rpc:call(Node,code,add_patha,[ApplEbin],5000) of
 			       {error,Reason}->
-				   {error,Reason};
+				   {error,[?MODULE,?LINE," ",Reason]};
 			       true->
-				   rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
-						      {"Application  succesfully loaded ",ApplId,' ',ApplVsn,' ',Node}]),
 				   case rpc:call(Node,StartModule,StartFunction,StartArgs,20*5000) of
 				       ok->
-					   rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
-							      {"Application  succesfully started ",ApplId,' ',ApplVsn,' ',Node}]),
 					   {ok,ApplId,ApplVsn,ApplDir};
 				       Error ->
-					   rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
-							      {"Error whenstarting application ",ApplId,' ',Error}]),
-					   Error
+					    {error,[?MODULE,?LINE," ",Error]}
 				   end
 			   end
 	   end,
