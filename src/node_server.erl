@@ -134,7 +134,8 @@ ping()->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-    
+    rpc:cast(node(),nodelog_server,log,[info,?MODULE_STRING,?LINE,
+					{"OK, started server at node  ",?MODULE," ",node()}]),
     {ok, #state{
 	   }
     }.
