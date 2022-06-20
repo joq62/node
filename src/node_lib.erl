@@ -124,7 +124,7 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
     Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
 
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
-    Timeout=5000,
+    Timeout=10000,
     Result=case rpc:call(node(),my_ssh,ssh_send,[Ip,SshPort,Uid,Pwd,Msg,Timeout],Timeout-1000) of
 	       % {badrpc,timeout}-> retry X times       
 	       {badrpc,Reason}->
