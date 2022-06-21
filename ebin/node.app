@@ -5,6 +5,6 @@
               {mod,{node_app,[]}},
               {applications,[kernel,stdlib]},
               {env,[]},
-              {modules,[git_lib,node_app,node_lib,node_server,node_sup]},
+              {modules,[git_lib,node,node_app,node_lib,node_sup]},
               {licenses,["Apache 2.0"]},
               {links,[]}]}.

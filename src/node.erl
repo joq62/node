@@ -5,7 +5,7 @@
 %%% supports with services
 %%% Created : 10 dec 2012
 %%% -------------------------------------------------------------------
--module(node_server).   
+-module(node).   
 
 -behaviour(gen_server).  
 
@@ -50,7 +50,7 @@
 %% External functions
 %% ====================================================================
 appl_start([])->
-    application:start(node).
+    application:start(?MODULE).
 
 %% ====================================================================
 %% Server functions
@@ -134,7 +134,7 @@ ping()->
 %%          {stop, Reason}
 %% --------------------------------------------------------------------
 init([]) ->
-    rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
+    rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
 					{"OK, started server at node  ",?MODULE," ",node()}]),
     {ok, #state{
 	   }
@@ -153,11 +153,11 @@ init([]) ->
 handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],2*5000) of
 	      {ok,Node}->
-		  rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
 						      {"OK, start Node at host  ",Node,HostName}]),
 		  {ok,Node};
 	      {error,Reason}->
-		  rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
 						      {"Error when creating Node with name  at host  ",NodeName,HostName, Reason}]),
 		  {error,Reason}
 	  end,
@@ -167,11 +167,11 @@ handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
 handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,ssh_create,[NodeArgs,SshArgs],5*5000) of
 	      {ok,Node}->
-		  rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
 						      {"OK, start Node at host  ",Node,NodeArgs}]),
 		  {ok,Node};
 	      {error,Reason}->
-		  rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
 						      {"Error when creating Node with name  at host  ",NodeArgs, Reason}]),
 		  {error,Reason}
 	  end,
@@ -180,11 +180,11 @@ handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
 handle_call({ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,ssh_create,[HostName,NodeName,Cookie,PaArgs,EnvArgs],5*5000) of
 	      {ok,Node}->
-		  rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
 						      {"OK, start Node at host  ",Node,HostName}]),
 		  {ok,Node};
 	      {error,Reason}->
-		  rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,
+		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
 						      {"Error when creating NodeName at host  ",NodeName,HostName, Reason}]),
 		  {error,Reason}
 	  end,
