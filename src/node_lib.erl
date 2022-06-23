@@ -178,7 +178,7 @@ check_started_node(N,Node,_) ->
 load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs})->
    % {ok,Root}=rpc:call(Node,file,get_cwd,[],5000),
   %  ApplDir=filename:join([Root,NodeDir,ApplId++"_"++ApplVsn]),
-    ApplDir=filename:join([NodeDir,ApplId++"_"++ApplVsn]),
+    ApplDir=filename:join([NodeDir,atom_to_list(Node)++"_"++ApplId++"_"++ApplVsn]),
   %  os:cmd("rm -rf "++ApplDir),
  %   ok=file:make_dir(ApplDir),
     rpc:call(Node,os,cmd,["rm -rf "++ApplDir],5000),
