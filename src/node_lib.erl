@@ -69,7 +69,7 @@ create(HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs)->
     Args=PaArgs++" "++"-setcookie "++Cookie++" "++EnvArgs,
     Result=case slave:start(HostName,NodeName,Args) of
 	       {error,Reason}->
-		   {error,[Reason]};
+		   {error,[Reason,?MODULE,?LINE]};
 	       {ok,SlaveNode}->
 		   case net_kernel:connect_node(SlaveNode) of
 		       false->

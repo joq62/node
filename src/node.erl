@@ -163,6 +163,21 @@ handle_call({create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
 	  end,
     {reply, Reply, State};
 
+handle_call({create,HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs},_From, State) ->
+    rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+				 {"DEBUG: node, Cwd and NodeDir ",node()," ",file:get_cwd()," ",NodeDir}]),
+    Reply=case rpc:call(node(),node_lib,create,[HostName,NodeDir,NodeName,Cookie,PaArgs,EnvArgs],2*5000) of
+	      {ok,Node}->
+		  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+						      {"OK, start Node at host  ",Node,HostName}]),
+		  {ok,Node};
+	      {error,Reason}->
+		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
+						      {"Error when creating Node with name  at host  ",NodeName,HostName, Reason}]),
+		  {error,Reason}
+	  end,
+    {reply, Reply, State};
+
 
 handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
     Reply=case rpc:call(node(),node_lib,ssh_create,[NodeArgs,SshArgs],5*5000) of
