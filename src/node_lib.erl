@@ -125,11 +125,15 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
 
     Msg="erl -sname "++NodeName++" "++Args++" "++"-detached", 
     Timeout=10000,
+ %   rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+%				 {"DEBUG:HostName,node(),RemoteNode,Msg",?MODULE," ",HostName,node(),Node,Msg}]),
     Result=case rpc:call(node(),my_ssh,ssh_send,[Ip,SshPort,Uid,Pwd,Msg,Timeout],Timeout-1000) of
 	       % {badrpc,timeout}-> retry X times       
 	       {badrpc,Reason}->
 		   {error,[{?MODULE,?LINE," ",badrpc,Reason}]};
-	       ok->
+	       Return->
+		 %  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+		%				{"DEBUG: Return, Node",?MODULE," ",Return, Node}]),
 		   case check_started_node(100,Node,false) of
 		       false->
 			   rpc:call(Node,init,stop,[],5000),
@@ -145,6 +149,7 @@ check_stopped_node(_N,_Node,true)->
 check_stopped_node(0,_Node,Boolean) ->
     Boolean;
 check_stopped_node(N,Node,_) ->
+ 
     Boolean=case net_adm:ping(Node) of
 		pong->
 		    timer:sleep(100),
@@ -159,7 +164,8 @@ check_started_node(_N,_Node,true)->
 check_started_node(0,_Node,Boolean) ->
     Boolean;
 check_started_node(N,Node,_) ->
-
+ %  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+%				 {"DEBUG:N ",?MODULE," ",N, Node}]),
     Boolean=case net_adm:ping(Node) of
 		  pang->
 		    timer:sleep(100),
@@ -176,14 +182,10 @@ check_started_node(N,Node,_) ->
 %% Returns: non
 %% --------------------------------------------------------------------
 load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs})->
-   % {ok,Root}=rpc:call(Node,file,get_cwd,[],5000),
-  %  ApplDir=filename:join([Root,NodeDir,ApplId++"_"++ApplVsn]),
     {NodeName,_}=node_to_id:start(Node),
-
     ApplDir=filename:join([NodeDir,ApplId++"_"++ApplVsn++"_"++NodeName]),
-  %  os:cmd("rm -rf "++ApplDir),
- %   ok=file:make_dir(ApplDir),
     rpc:call(Node,os,cmd,["rm -rf "++ApplDir],5000),
+    timer:sleep(1000),
     ok=rpc:call(Node,file,make_dir,[ApplDir],5000),
     Result=case rpc:call(node(),git_lib,create,[Node,ApplDir,GitPath],20*5000) of
 	       {error,Reason}->

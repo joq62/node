@@ -24,6 +24,7 @@
 	 ssh_create/2,
 	 ssh_create/5,
 	 delete/1,
+	 load_start_appl/3,
 	 load_start_appl/6,
 	 stop_unload_appl/3,
 
@@ -81,6 +82,9 @@ ssh_create(HostName,NodeName,Cookie,PaArgs,EnvArgs)->
 delete(Node)->
     gen_server:call(?SERVER, {delete,Node},infinity).
     
+load_start_appl(Node,NodeDir,ApplId)->
+    gen_server:call(?SERVER, {load_start_appl,Node,NodeDir,ApplId},infinity).
+
 load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,StartCmd)->
     gen_server:call(?SERVER, {load_start_appl,Node,NodeDir,ApplId,ApplVsn,GitPath,StartCmd},infinity).
     
@@ -212,6 +216,14 @@ handle_call({delete,Node},_From, State) ->
     Reply=rpc:call(node(),node_lib,delete,[Node],2*5000),
     {reply, Reply, State};
 
+
+handle_call({load_start_appl,Node,NodeDir,ApplId},_From, State) ->
+    ApplIdSpec=ApplId++".spec",
+    {ok,[ApplVsn|_]}=db_application_spec:read(vsn,ApplIdSpec),
+    {ok,GitPath}=db_application_spec:read(gitpath,ApplIdSpec),
+    {ok,{StartModule,StartFunction,StartArgs}}=db_application_spec:read(cmd,ApplIdSpec),
+    Reply=rpc:call(node(),node_lib,load_start_appl,[Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs}],5*5000),
+    {reply, Reply, State};
 
 handle_call({load_start_appl,Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs}},_From, State) ->
      Reply=rpc:call(node(),node_lib,load_start_appl,[Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,StartArgs}],5*5000),
