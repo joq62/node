@@ -132,8 +132,8 @@ ssh_create({HostName,NodeName,Cookie,PaArgs,EnvArgs},
 	       {badrpc,Reason}->
 		   {error,[{?MODULE,?LINE," ",badrpc,Reason}]};
 	       Return->
-		 %  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
-		%				{"DEBUG: Return, Node",?MODULE," ",Return, Node}]),
+		   rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+						{"DEBUG: Return, Node",?MODULE," ",Return, Node}]),
 		   case check_started_node(100,Node,false) of
 		       false->
 			   rpc:call(Node,init,stop,[],5000),
