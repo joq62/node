@@ -192,7 +192,11 @@ handle_call({ssh_create,NodeArgs,SshArgs},_From, State) ->
 	      {error,Reason}->
 		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
 						      {"Error when creating Node with name  at host  ",NodeArgs, Reason}]),
-		  {error,Reason}
+		  {error,Reason};
+	      {badrpc,Reason}->
+		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
+					       {"Error when creating Node with name  at host  ",NodeArgs, badrpc, Reason}])
+		  
 	  end,
     {reply, Reply, State};
 
@@ -205,7 +209,10 @@ handle_call({ssh_create,HostName,NodeName,Cookie,PaArgs,EnvArgs},_From, State) -
 	      {error,Reason}->
 		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
 						      {"Error when creating NodeName at host  ",NodeName,HostName, Reason}]),
-		  {error,Reason}
+		  {error,Reason};
+	       {badrpc,Reason}->
+		  rpc:cast(node(),nodelog,log,[warning,?MODULE_STRING,?LINE,
+					       {"Error when creating Node with name  at host  ", badrpc, Reason}])
 	  end,
     {reply, Reply, State};
 
