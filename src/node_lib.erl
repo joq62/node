@@ -195,7 +195,7 @@ load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,S
 			   case rpc:call(Node,code,add_pathsa,[[ApplDir,ApplEbin,ApplDir++"/*"]],5000) of
 			       {error,Reason}->
 				   {error,[?MODULE,?LINE," ",Reason]};
-			       true->
+			       ok->
 				   case rpc:call(Node,StartModule,StartFunction,StartArgs,20*5000) of
 				       ok->
 					   {ok,ApplId,ApplVsn,ApplDir};
