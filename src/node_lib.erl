@@ -164,8 +164,8 @@ check_started_node(_N,_Node,true)->
 check_started_node(0,_Node,Boolean) ->
     Boolean;
 check_started_node(N,Node,_) ->
- %  rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
-%				 {"DEBUG:N ",?MODULE," ",N, Node}]),
+   rpc:cast(node(),nodelog,log,[notice,?MODULE_STRING,?LINE,
+				 {"DEBUG:N ",?MODULE," ",N, Node}]),
     Boolean=case net_adm:ping(Node) of
 		  pang->
 		    timer:sleep(100),
@@ -192,7 +192,7 @@ load_start_appl(Node,NodeDir,ApplId,ApplVsn,GitPath,{StartModule,StartFunction,S
 		   {error,Reason};
 	       {ok,ApplDir}->
 		   ApplEbin=filename:join(ApplDir,"ebin"),
-			   case rpc:call(Node,code,add_patha,[ApplEbin],5000) of
+			   case rpc:call(Node,code,add_pathsa,[[ApplDir,ApplEbin,ApplDir++"/*"]],5000) of
 			       {error,Reason}->
 				   {error,[?MODULE,?LINE," ",Reason]};
 			       true->
